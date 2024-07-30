@@ -15,8 +15,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const upload = multer({ dest: 'uploads/' });
 
 const S3_BUCKET = 'miniprojecttestbucket';
-const S3_KEY = 'AKIA3FLD5MXT7DQM2JNP';
-const S3_SECRET = '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';
+const S3_KEY = '';
+const S3_SECRET = '';
 const S3_REGION = 'eu-north-1';
 
 const s3 = new AWS.S3({
