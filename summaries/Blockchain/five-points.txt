@@ -1,0 +1,6 @@
+Important Points:
+These transactions are validated and then added block by several people called miners.
+-These blocks are a collection of records linked with each other, strongly resistant to alteration and protected using cryptography.
+-This output is now transmitted across the world using jacks public key.
+-Now lets go back to our previous example and have Phil, Ted and Sam send Jack two bitcoins each as their contribution to the previous nights dinner.
+-So what happens when Phil has only one bitcoin left and he tries to send two more bitcoins to Jack, the transaction will not go through.

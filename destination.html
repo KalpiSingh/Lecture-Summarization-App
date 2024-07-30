@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:focus {
+            outline: 2px solid #333;
+        }
+
+        #recordButton {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #recordButton:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        #pauseButton {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        #pauseButton:hover:not(:disabled) {
+            background-color: #e0a800;
+        }
+
+        #stopButton {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #stopButton:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        .audio-container {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .recorded-audio {
+            width: 100%;
+        }
+
+        .button-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .deleteButton {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        .deleteButton {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .deleteButton:hover {
+            background-color: #c82333;
+        }
+
+        /* Mobile Styles */
+        @media only screen and (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Recorder</h1>
+        <div id="timer">00:00:00</div>
+        <div class="button-container">
+            <button id="recordButton" aria-label="Start Recording">Start Class</button>
+            <button id="pauseButton" aria-label="Pause Recording" disabled>Pause</button>
+            <button id="stopButton" aria-label="Stop Recording" disabled>Stop Class</button>
+        </div>
+        <audio id="audioPlayback" controls aria-label="Audio Playback"></audio>
+        <div id="recordingsList" aria-live="polite"></div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let timerInterval;
+        let elapsedTime = 0;
+        const recordButton = document.getElementById('recordButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const stopButton = document.getElementById('stopButton');
+        const audioPlayback = document.getElementById('audioPlayback');
+        const timerDisplay = document.getElementById('timer');
+        const recordingsList = document.getElementById('recordingsList');
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                elapsedTime++;
+                timerDisplay.textContent = formatTime(elapsedTime);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function getCurrentDateTime() {
+            const now = new Date();
+            return now.toLocaleString();
+        }
+
+        function createRecordingElement(blob, uniqueName) {
+            const url = URL.createObjectURL(blob);
+            const div = document.createElement('div');
+            div.className = 'audio-container';
+            
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = url;
+            audio.className = 'recorded-audio';
+
+            const dateTime = document.createElement('p');
+            dateTime.textContent = `Recorded on: ${getCurrentDateTime()}`;
+
+            const controls = document.createElement('div');
+            controls.className = 'audio-controls';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'deleteButton';
+            deleteButton.onclick = () => {
+                div.remove();
+            };
+
+            controls.appendChild(deleteButton);
+            div.appendChild(dateTime);
+            div.appendChild(audio);
+            div.appendChild(controls);
+            return div;
+        }
+
+        recordButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                    startTimer();
+                    recordButton.disabled = true;
+                    pauseButton.disabled = false;
+                    stopButton.disabled = false;
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        stopTimer();
+                        const audioBlob = new Blob(audioChunks, { 'type': 'audio/wav' });
+                        const uniqueName = `recording_${new Date().toISOString().replace(/[:.]/g, '-')}.wav`;
+                        audioChunks = [];
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        audioPlayback.src = audioUrl;
+
+                        const recordingElement = createRecordingElement(audioBlob, uniqueName);
+                        recordingsList.appendChild(recordingElement);
+
+                        // Upload to S3
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, uniqueName);
+                        fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    };
+                });
+        });
+
+        pauseButton.addEventListener('click', () => {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+                stopTimer();
+                pauseButton.textContent = 'Resume';
+            } else if (mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+                startTimer();
+                pauseButton.textContent = 'Pause';
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            mediaRecorder.stop();
+            stopTimer();
+            elapsedTime = 0;
+            timerDisplay.textContent = formatTime(elapsedTime);
+            recordButton.disabled = false;
+            pauseButton.disabled = true;
+            stopButton.disabled = true;
+        });
+    </script>
+</body>
+</html>

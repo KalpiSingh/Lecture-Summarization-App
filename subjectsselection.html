@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject Entry Form</title>
+<style>
+  body {
+    background-color: #f0f0f0;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  button:hover {
+    background-color: #3e8e41;
+  }
+
+  button[type="submit"] {
+    background-color: #3498db;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus {
+    border-color: #3498db;
+  }
+
+  .subject-input {
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Enter Subject Names</h2>
+  <form id="subjectForm" action="/save_subjects" method="POST">
+    <label for="subjectNumber">Number of Subjects:</label>
+    <input type="number" id="subjectNumber" name="subjectNumber" min="1" required>
+    <button type="button" onclick="generateInputs()">Generate</button>
+    <div id="subjectInputs"></div>
+    <input type="submit" value="Submit">
+  </form>
+</div>
+
+<script>
+  function generateInputs() {
+    var subjectNumber = document.getElementById("subjectNumber").value;
+    var subjectInputs = document.getElementById("subjectInputs");
+    subjectInputs.innerHTML = ""; // Clear previous inputs
+
+    for (var i = 0; i < subjectNumber; i++) {
+      var input = document.createElement("input");
+      input.type = "text";
+      input.name = "sub" + (i + 1);
+      input.placeholder = "Enter subject " + (i + 1) + " name";
+      input.classList.add("subject-input");
+      subjectInputs.appendChild(input);
+    }
+  }
+
+  
+  
+  document.getElementById('subjectForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      // Collect the form data
+      const formData = new FormData(event.target);
+
+      // Convert form data to a URL-encoded string
+      const data = new URLSearchParams(formData);
+
+      // Send the data to the server using fetch
+      fetch('/save_subjects', {
+        method: 'POST',
+        body: data,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // If the response is OK, redirect to the new page
+          alert("Form submitted successfully!");
+        } else {
+          // Handle any errors
+          alert('Failed to save course information.');
+        }
+      })
+      .catch(error => {
+        // Handle network errors
+        console.error('Error:', error);
+        alert('An error occurred while saving course information.');
+      });
+    });
+</script>
+
+
+</body>
+</html>
