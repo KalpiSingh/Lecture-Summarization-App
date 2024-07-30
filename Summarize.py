@@ -12,11 +12,11 @@ model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
 
 # Set your AssemblyAI API key
-aai.settings.api_key = "16b84bd8b8e14bf3acbc3717d0609648"
+aai.settings.api_key = ""
 
 # AWS S3 configurations
-AWS_ACCESS_KEY = 'AKIA3FLD5MXT7DQM2JNP'
-AWS_SECRET_KEY = 'CaVoiV2/DBA1diz5zgmJ7n/8cLEuWEq4qBX4M0MY'
+AWS_ACCESS_KEY = ''
+AWS_SECRET_KEY = ''
 SOURCE_BUCKET_NAME = 'miniprojecttestbucket'
 TARGET_BUCKET_NAME = 'miniprojectfilesbucket'
 AWS_REGION = 'eu-north-1'
